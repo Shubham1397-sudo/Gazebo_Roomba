@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+<!-- Load the TortoiseBot URDF model into the parameter server -->
+
+<param name="robot_description" textfile="$(find robot)/urdf/robot.urdf" />
+
+<rosparam file="$(find robot)/config/robot_control.yaml" command="load" />
+
+<!-- Start Gazebo with an empty world -->
+<include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+<!-- Spawn a TortoiseBot in Gazebo, taking the description from the
+parameter server -->
+
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+      args="-param robot_description -urdf -model robot" />
+
+
+<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="robot" args="--namespace=/robot
+                              joint_state_controller
+                              left_wheel_controller
+                              right_wheel_controller
+                              --shutdown-timeout 3">
+
+</node>
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+  respawn="false" output="screen">
+  <remap from="/joint_states" to="/rrbot/joint_states" />
+</node>
+
+</launch>
